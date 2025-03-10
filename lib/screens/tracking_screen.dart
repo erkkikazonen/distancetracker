@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 
 import '../models/route_model.dart';
 import '../providers/route_provider.dart';
+import '../services/file_picker_service.dart';
+import '../services/route_parser_service.dart';
 
 class TrackingScreen extends StatefulWidget {
   const TrackingScreen({super.key});
@@ -29,6 +31,7 @@ class TrackingScreenState extends State<TrackingScreen> {
   StreamSubscription<Position>? _positionStream;
   Timer? _timer;
   final List<LatLng> _routePoints = [];
+  List<LatLng> _loadedRoutePoints = [];
   LatLng? _userLocation;
   bool _mapLocked = true;
 
@@ -144,7 +147,7 @@ class TrackingScreenState extends State<TrackingScreen> {
     _positionStream = Geolocator.getPositionStream(
       locationSettings: LocationSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 5,
+        distanceFilter: 1,
       ),
     ).listen((Position position) {
       if (!_paused) {
@@ -256,6 +259,16 @@ class TrackingScreenState extends State<TrackingScreen> {
     }
   }
 
+  void _loadRoute() async {
+    final filePath = await FilePickerService.pickFile();
+    if (filePath != null) {
+      final routePoints = await RouteParserService.parseGpxOrKml(filePath);
+      setState(() {
+        _loadedRoutePoints = routePoints;
+      });
+    }
+  }
+
   String _formatTime(int seconds) {
     int hours = seconds ~/ 3600;
     int minutes = (seconds % 3600) ~/ 60;
@@ -297,6 +310,12 @@ class TrackingScreenState extends State<TrackingScreen> {
                           strokeWidth: 4.0,
                           color: Colors.blue,
                         ),
+                        if (_loadedRoutePoints.isNotEmpty)
+                          Polyline(
+                            points: _loadedRoutePoints,
+                            strokeWidth: 4.0,
+                            color: Colors.orange,
+                          ),
                       ],
                     ),
                     MarkerLayer(
@@ -321,6 +340,11 @@ class TrackingScreenState extends State<TrackingScreen> {
                   right: 16,
                   child: Column(
                     children: [
+                      FloatingActionButton(
+                        onPressed: _loadRoute,
+                        child: Icon(Icons.upload_file),
+                      ),
+                      SizedBox(height: 10),
                       FloatingActionButton(
                         onPressed: () => _mapController.move(_mapController.camera.center, _mapController.camera.zoom + 1),
                         child: Icon(Icons.add),
@@ -395,7 +419,7 @@ class TrackingScreenState extends State<TrackingScreen> {
         children: [
           Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           SizedBox(height: 5),
-          Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
+          Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
         ],
       ),
     );

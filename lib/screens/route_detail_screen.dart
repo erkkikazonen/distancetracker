@@ -26,7 +26,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Route Details")),
+      appBar: AppBar(title: Text("Route Details"), centerTitle: true),
       body: Column(
         children: [
           Expanded(
@@ -152,7 +152,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
         children: [
           Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           SizedBox(height: 5),
-          Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
+          Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
         ],
       ),
     );

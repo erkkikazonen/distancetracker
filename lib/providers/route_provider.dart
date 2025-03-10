@@ -10,4 +10,9 @@ class RouteProvider with ChangeNotifier {
     _routes.add(route);
     notifyListeners();
   }
+
+  void removeRoute(RouteModel route) {
+    _routes.remove(route);
+    notifyListeners();
+  }
 }
