@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -7,11 +10,11 @@ import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:xml/xml.dart';
 
 import '../models/route_model.dart';
 import '../providers/route_provider.dart';
-import '../services/file_picker_service.dart';
-import '../services/route_parser_service.dart';
+
 
 class TrackingScreen extends StatefulWidget {
   const TrackingScreen({super.key});
@@ -259,15 +262,57 @@ class TrackingScreenState extends State<TrackingScreen> {
     }
   }
 
-  void _loadRoute() async {
-    final filePath = await FilePickerService.pickFile();
-    if (filePath != null) {
-      final routePoints = await RouteParserService.parseGpxOrKml(filePath);
-      setState(() {
-        _loadedRoutePoints = routePoints;
-      });
+  List<LatLng> _parseGpxOrKml(String filePath) {
+    final file = File(filePath);
+    final document = XmlDocument.parse(file.readAsStringSync());
+
+    List<LatLng> loadedRoutePoints = [];
+
+    for (var trkpt in document.findAllElements('trkpt')) {
+      final lat = double.parse(trkpt.getAttribute('lat')!);
+      final lon = double.parse(trkpt.getAttribute('lon')!);
+      loadedRoutePoints.add(LatLng(lat, lon));
+    }
+
+    return loadedRoutePoints;
+  }
+
+
+  Future<void> _loadRoute() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+      );
+
+      if (result != null && result.files.single.path != null) {
+        String filePath = result.files.single.path!;
+
+        if (!mounted) return;
+
+        List<LatLng> newRoute = _parseGpxOrKml(filePath);
+
+        if (newRoute.isNotEmpty) {
+          double avgLat = newRoute.map((p) => p.latitude).reduce((a, b) => a + b) / newRoute.length;
+          double avgLon = newRoute.map((p) => p.longitude).reduce((a, b) => a + b) / newRoute.length;
+          LatLng center = LatLng(avgLat, avgLon);
+
+          setState(() {
+            _loadedRoutePoints.clear();
+            _loadedRoutePoints.addAll(newRoute);
+          });
+
+          _mapController.move(center, 15.0);
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Reitti ladattu onnistuneesti!")),
+        );
+      }
+    } catch (e) {
+      print("Virhe ladattaessa reittiä: $e");
     }
   }
+
 
   String _formatTime(int seconds) {
     int hours = seconds ~/ 3600;
