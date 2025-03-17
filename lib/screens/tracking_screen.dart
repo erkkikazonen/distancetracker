@@ -116,9 +116,8 @@ class TrackingScreenState extends State<TrackingScreen> {
 
           _userLocation = LatLng(position.latitude, position.longitude);
 
-          if (_mapLocked) {
-            _mapController.move(_userLocation!, _mapController.camera.zoom);
-          }
+          _mapController.move(_userLocation!, _mapController.camera.zoom);
+
         });
       }
     }
@@ -136,6 +135,7 @@ class TrackingScreenState extends State<TrackingScreen> {
         _distance = 0.0;
         _averageSpeed = 0.0;
         _routePoints.clear();
+        _mapLocked = true;
       });
     }
 
@@ -172,6 +172,7 @@ class TrackingScreenState extends State<TrackingScreen> {
     if (mounted) {
       setState(() {
         _paused = false;
+        _mapLocked = true;
       });
     }
 
