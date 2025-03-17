@@ -34,9 +34,8 @@ class TrackingScreenState extends State<TrackingScreen> {
   StreamSubscription<Position>? _positionStream;
   Timer? _timer;
   final List<LatLng> _routePoints = [];
-  List<LatLng> _loadedRoutePoints = [];
+  final List<LatLng> _loadedRoutePoints = [];
   LatLng? _userLocation;
-  bool _mapLocked = true;
 
   @override
   void initState() {
@@ -135,7 +134,6 @@ class TrackingScreenState extends State<TrackingScreen> {
         _distance = 0.0;
         _averageSpeed = 0.0;
         _routePoints.clear();
-        _mapLocked = true;
       });
     }
 
@@ -172,7 +170,6 @@ class TrackingScreenState extends State<TrackingScreen> {
     if (mounted) {
       setState(() {
         _paused = false;
-        _mapLocked = true;
       });
     }
 
@@ -209,7 +206,6 @@ class TrackingScreenState extends State<TrackingScreen> {
 
   void _centerMap() {
     setState(() {
-      _mapLocked = true;
     });
 
     if (_userLocation != null) {
@@ -310,7 +306,9 @@ class TrackingScreenState extends State<TrackingScreen> {
         );
       }
     } catch (e) {
-      print("Virhe ladattaessa reittiä: $e");
+      if (kDebugMode) {
+        print("Virhe ladattaessa reittiä: $e");
+      }
     }
   }
 
@@ -339,7 +337,6 @@ class TrackingScreenState extends State<TrackingScreen> {
                     onMapEvent: (event) {
                       if (event is MapEventMove) {
                         setState(() {
-                          _mapLocked = false;
                         });
                       }
                     },
