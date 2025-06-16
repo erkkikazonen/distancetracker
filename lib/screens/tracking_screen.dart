@@ -148,7 +148,7 @@ class TrackingScreenState extends State<TrackingScreen> {
     _positionStream = Geolocator.getPositionStream(
       locationSettings: LocationSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 1,
+        distanceFilter: 0,
       ),
     ).listen((Position position) {
       if (!_paused) {
