@@ -11,6 +11,7 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+README.md
 
 # IntelliJ related
 *.iml
@@ -33,6 +34,7 @@ migrate_working_dir/
 .pub/
 /build/
 
+
 # Symbolication related
 app.*.symbols
 
@@ -43,5 +45,3 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-
-README.md
